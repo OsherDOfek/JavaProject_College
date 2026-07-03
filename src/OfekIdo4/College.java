@@ -1,12 +1,9 @@
 package OfekIdo4;
-
-public class College{
-	private Committee[] com;
-	private Department[] dep;
-	private Lecturer[] lec;
-	private int numOfLecturer;
-	private int numOfDepartment;
-	private int numOfCommittee;
+import java.util.ArrayList;
+public class College<T extends Lecturer>{
+	private ArrayList<Committee<T>> com;
+	private ArrayList<Department<T>> dep;
+	private ArrayList<Lecturer> lec;
 	private String college_name;
 
 	public College(String college_name) {

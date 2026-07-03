@@ -1,55 +1,36 @@
 package OfekIdo4;
-public class Department {
+import java.util.ArrayList;
+public class Department<T extends Lecturer> {
 	private String dep_name;
 	private int num_student;
-	private Lecturer[] lec_arr;
-	private int numOfLecturer;
+	private ArrayList<T> lecturers;
 	
 	
 	// Department constructor
 	public Department(String dep_name,int num_student) throws InvalidStudentNumberException {
-		if(num_student < 0) {
-			throw new InvalidStudentNumberException();
-		}
+		setNum_student(num_student);
 		this.dep_name = dep_name;
-		this.num_student = num_student;
-		this.lec_arr = new Lecturer[2];
-		this.numOfLecturer = 0;
+		this.lecturers = new ArrayList<T>();
 	}
 
 	// add lecturer to the department's array
 	public void add_lecturer(Lecturer lec) throws AlreadyInDepartmentException {
-		if(in_lec_arr(lec)) {
+		if(this.lecturers.contains(lec)) {
 			throw new AlreadyInDepartmentException();								// already in the department
 		}
-		if(this.lec_arr.length == this.numOfLecturer) {			// check if needs to increase the array
-			Lecturer[] temp = new Lecturer[this.lec_arr.length*2];
-			for(int i = 0; i < this.numOfLecturer; i++) {		// copying the array to a temporary
-				temp[i] = this.lec_arr[i];
-			}
-			this.lec_arr = temp;
-		}
-		this.lec_arr[this.numOfLecturer++] = lec;					// adding the new lecturer to the array
+		this.lecturers.add((T)lec);
 	}
 	
-	public boolean in_lec_arr(Lecturer l) {
-		for(int i = 0; i < this.numOfLecturer; i ++) {
-			if(this.lec_arr[i].getName().equals(l.getName())) {
-				return true;
-			}
-		}
-		return false;
-	}
 	
 	// returns the average salary of the lecturers in the departments
 	public double avg_salary() {
-		if(this.numOfLecturer == 0)
+		if(this.lecturers.size() == 0)
 			return 0;
 		int sum = 0;
-		for (int i = 0; i < this.numOfLecturer ; i++) {
-			sum += this.lec_arr[i].getSalary(); 
+		for (int i = 0; i < this.lecturers.size(); i++) {
+			sum += this.lecturers.get(i).getSalary(); 
 		}
-		return (double) sum/this.numOfLecturer;
+		return (double) sum/this.lecturers.size();
 	}
 
 	
@@ -73,32 +54,23 @@ public class Department {
 		this.num_student = num_student;
 	}
 
-	public Lecturer[] getLec_arr() {
-		return lec_arr;
+
+	public ArrayList<T> getLecturers() {
+		return lecturers;
 	}
 
-	
-	public int getNumOfLecturer() {
-		return numOfLecturer;
-	}
-
-	public void setNumOfLecturer(int numOfLecturer) {
-		this.numOfLecturer = numOfLecturer;
-	}
-
-	public void setLec_arr(Lecturer[] lec_arr) {
-	    if (lec_arr != null)
-	        this.lec_arr = lec_arr;
+	public void setLecturers(ArrayList<T> lecturers) {
+		this.lecturers = lecturers;
 	}
 
 	public String toStringLecturer() {
-		if(this.numOfLecturer == 0)
+		if(this.lecturers.size() == 0)
 			return "Lecturer: None";
 		
 		String s = "Lecturers: ";
-		for(int i = 0; i < this.numOfLecturer; i++) {
-			s += this.lec_arr[i].getName();
-			if(i < this.numOfLecturer - 1)
+		for(int i = 0; i < this.lecturers.size(); i++) {
+			s += this.lecturers.get(i).getName();
+			if(i < this.lecturers.size() - 1)
 				s += ", ";
 		}
 		return s;
