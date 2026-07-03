@@ -1,59 +1,36 @@
 package OfekIdo4;
-public class Committee implements Cloneable{
-	protected String name ;
-	protected Lecturer[] lec_arr;
-	protected int numOfLecturer; // amount of lecturers in the committee
-	protected Lecturer head_of_com ;
-	protected int degree_level;
+import java.util.ArrayList;
+public class Committee<T extends Lecturer> implements Cloneable {
+    protected String name;
+    protected ArrayList<T> members;    
+    protected Lecturer head_of_com;    
 
-	// Committee constructor (head must be at least a Doctor)
-	public Committee(String name,Lecturer head_of_com,int degree_level) throws InvalidDegreeException {
-		if (head_of_com != null && !(head_of_com instanceof Doctor)) {
-			throw new InvalidDegreeException();
-		}
-		this.name = name;
-		this.degree_level = degree_level;
-		this.head_of_com = head_of_com;
-		this.lec_arr = new Lecturer[2]; //start size
-		this.numOfLecturer = 0; //no members at first (head doesn't count as member)
-		if (this.head_of_com != null)
-			this.head_of_com.addCommittee(this);	// the head is linked to this committee (this)
-	}
-
-	 // Add a new lecturer to the committee
-    public void add_com_mem(Lecturer l) throws AlreadyCommitteeMemberException {
-        // Check if the lecturer is already the committee head
-        if (this.head_of_com != null && this.head_of_com.getName().equals(l.getName())) {
-            throw new AlreadyCommitteeMemberException();	// already the head
-        }
-
-        // Check if the lecturer is already a regular member
-        if (isMember(l.getName())) {
-            throw new AlreadyCommitteeMemberException();	// already a member
-        }
-        // check if the lec array needs to be expend
-        if(this.lec_arr.length == this.numOfLecturer)
-			expend_lec_arr();
-
-        this.lec_arr[this.numOfLecturer] = l;
-        this.numOfLecturer++;
-        l.addCommittee(this);	// link the lecturer to this committee (this)
+    public Committee(String name, Lecturer head_of_com) throws InvalidDegreeException {
+        if (head_of_com != null && !(head_of_com instanceof Doctor))
+            throw new InvalidDegreeException();
+        this.name = name;
+        this.head_of_com = head_of_com;
+        this.members = new ArrayList<>();
+        if (head_of_com != null) head_of_com.addCommittee(this);
     }
+
+    public void add_com_mem(T l) throws AlreadyCommitteeMemberException {
+        if (head_of_com != null && head_of_com.equals(l))
+            throw new AlreadyCommitteeMemberException();
+        if (members.contains(l))
+            throw new AlreadyCommitteeMemberException();
+        members.add(l);
+        l.addCommittee(this);
+    }
+
 
     // Checks whether a lecturer is a regular member of the committee
     public boolean isMember(String lec_name) {
-        for (int i = 0; i < this.numOfLecturer; i++) {
-            if (this.lec_arr[i].getName().equals(lec_name))
+        for (int i = 0; i < this.members.size(); i++) {
+            if (this.members.get(i).getName().equals(lec_name))
                 return true;
         }
         return false;
-    }
-
-    public void expend_lec_arr() {
-        Lecturer[] temp = new Lecturer[this.lec_arr.length*2];
-        for(int i = 0; i < this.numOfLecturer; i++)
-        	temp[i] = this.lec_arr[i];
-        this.lec_arr = temp;
     }
 
 	 // Update the committee head
@@ -80,40 +57,34 @@ public class Committee implements Cloneable{
 	
 	public int sum_of_papers() {
 		int sum = 0;
-		for(int i = 0; i < this.numOfLecturer; i++) {
-			if(this.getLec_arr()[i] instanceof Doctor)
-				sum += ((Doctor)this.getLec_arr()[i]).getNumOfPapers();
+		for(int i = 0; i < this.members.size(); i++) {
+			if(this.members.get(i) instanceof Doctor)
+				sum += ((Doctor)this.members.get(i)).getNumOfPapers();
 		}
 		return sum;
 	}
 
         // Remove a lecturer from the committee
 	public void remove_lecturer(String lec_name) throws MemberNotFoundException {
-	    for (int i = 0; i < this.numOfLecturer; i++) {
-	        if (this.lec_arr[i].getName().equals(lec_name)) {
-	            Lecturer removed = this.lec_arr[i];
-	            for (int j = i; j < this.numOfLecturer - 1; j++) {
-	                this.lec_arr[j] = this.lec_arr[j + 1];
-	            }
-	            this.lec_arr[this.numOfLecturer - 1] = null;
-	            this.numOfLecturer--;
-	            removed.removeCommittee(this.name);
+	    for (int i = 0; i < this.members.size(); i++) {
+	        if (this.members.get(i).getName().equals(lec_name)) {
+	            this.members.remove(i);
 	            return;
 	        }
 	    }
 	    throw new MemberNotFoundException();
 	}
 
-	public Committee clone() throws CloneNotSupportedException {
-		return (Committee)super.clone();
+	public Committee<T> clone() throws CloneNotSupportedException {
+		return (Committee<T>)super.clone();
 	}
 
 	// Builds a brand new committee named <name>-new with the same head and the same members
-	// (unlike clone(), this does not share the internal lec_arr with the original)
-	public Committee duplicate() throws InvalidDegreeException, AlreadyCommitteeMemberException {
-		Committee copy = new Committee(this.name + "-new", this.head_of_com,this.degree_level);
-		for (int i = 0; i < this.numOfLecturer; i++) {
-			copy.add_com_mem(this.lec_arr[i]);
+	
+	public Committee<T> duplicate() throws InvalidDegreeException, AlreadyCommitteeMemberException {
+		Committee<T> copy = new Committee<T>(this.name + "-new", this.head_of_com);
+		for (int i = 0; i < this.members.size(); i++) {
+			copy.add_com_mem(this.members.get(i));
 		}
 		return copy;
 	}
@@ -126,22 +97,7 @@ public class Committee implements Cloneable{
             this.name = name;
         }
 
-        public Lecturer[] getLec_arr() {
-            return lec_arr;
-        }
-
-        public int getNumOfLecturer() {
-			return numOfLecturer;
-		}
-
-		public void setLec_arr(Lecturer[] lec_arr) {
-			this.lec_arr = lec_arr;
-		}
-
-		public void setNumOfLecturer(int numOfLecturer) {
-			this.numOfLecturer = numOfLecturer;
-		}
-
+       
 		public Lecturer getHead_of_com() {
             return head_of_com;
         }
@@ -153,8 +109,13 @@ public class Committee implements Cloneable{
             update_head(head_of_com);
         }
         
-        public int getDegree_level() {
-			return degree_level;
+
+		public ArrayList<T> getMembers() {
+			return members;
+		}
+
+		public void setMembers(ArrayList<T> members) {
+			this.members = members;
 		}
 
 		@Override
@@ -163,21 +124,20 @@ public class Committee implements Cloneable{
             	return true;
             if (o == null || getClass() != o.getClass())
             	return false;
-            Committee other = (Committee) o;
+            Committee<T> other = (Committee<T>) o;
             return this.name.equals(other.name);
         }
         
         // toString
         public String toString() {
-        	String level = "Bachelor and Master";
-        	if(this.degree_level == 2)
-        		level = "Doctor";
-        	else
-        		level = "Professor";
+        	String level;
+        	if (this.members.get(0) instanceof Doctor) level = "Doctor";
+        	else if (this.members.get(0) instanceof Professor) level = "Professor";
+        	else level = "Bachelor and Master";
             String membersStr = "[";
-            for (int i = 0; i < numOfLecturer; i++) {
-                membersStr += lec_arr[i].getName();
-                if (i < numOfLecturer - 1) {
+            for (int i = 0; i < this.members.size(); i++) {
+                membersStr += this.members.get(i).getName();
+                if (i < this.members.size() - 1) {
                     membersStr += ", ";
                 }
             }

@@ -231,18 +231,18 @@ public class Main {
 		                break;
 		            }
 		            Committee comm = c1.getCom()[com - 1];
-		            if (comm.getNumOfLecturer() == 0) {
+		            if (comm.getMembers().size() == 0) {
 		                System.out.println("This committee has no members to remove");
 		                break;
 		            }
 		            System.out.println("choose lecturer to remove:");
 		            printMembers(comm);
 		            int lec = s.nextInt();
-		            if (lec < 1 || lec > comm.getNumOfLecturer()) {
+		            if (lec < 1 || lec > comm.getMembers().size()) {
 		                System.out.println("Invalid input!");
 		                break;
 		            }
-		            String lec_to_remove = comm.getLec_arr()[lec - 1].getName();
+		            String lec_to_remove = ((Lecturer)comm.getMembers().get(lec)).getName();
 		            try {
 		            	comm.remove_lecturer(lec_to_remove);
 		            	System.out.println("Member removed successfully");
@@ -525,7 +525,7 @@ public class Main {
 	}
 
 	private static void printMembers(Committee comm) {
-		for (int i = 0; i < comm.getNumOfLecturer(); i++)
-			System.out.println((i + 1) + "---> " + comm.getLec_arr()[i].getName());
+		for (int i = 0; i < comm.members.size(); i++)
+			System.out.println((i + 1) + "---> " + ((Lecturer)comm.getMembers().get(i)).getName());
 	}
 }

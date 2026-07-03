@@ -28,7 +28,7 @@ public class College{
 		}
 		if(this.numOfCommittee == this.com.length)
 			enlarge_com_arr();
-		this.com[this.numOfCommittee] = new Committee(com_name, head,degree_level);
+		this.com[this.numOfCommittee] = new Committee(com_name, head);
 		this.numOfCommittee++;
 		return;
 	}
