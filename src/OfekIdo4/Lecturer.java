@@ -1,14 +1,18 @@
 package OfekIdo4;
+import java.io.Serializable;
 import java.util.ArrayList;
-public abstract class Lecturer<T> {
+
+// Serializable so the whole college can be saved to a binary file (part 3)
+public abstract class Lecturer implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	private String name;		// lecturer name
 	private String id;			// lecturer id
 	private String degree_name; // degree name ("c.s" or "engineering")
 	private int salary;			// lecturer salary
 	private String dep_name;	// department name
-	private ArrayList<Committee> commi;	// lecturer's committees
-	
-	
+	private ArrayList<Committee<?>> commi;	// lecturer's committees (part 2: ArrayList instead of array)
+
 	// Lecturer constructor
 	public Lecturer(String name, String id, String degree_name, int salary, String dep_name) throws InvalidSalaryException {
 		if (salary < 0) {
@@ -17,11 +21,11 @@ public abstract class Lecturer<T> {
 		this.name = name;
 		this.id = id;
 		this.degree_name = degree_name;
-		setSalary(salary);
+		this.salary = salary;
 		this.dep_name = dep_name;
-		this.commi = new ArrayList<Committee>();
+		this.commi = new ArrayList<>();
 	}
-	
+
 	// Lecturer copy constructor
 	public Lecturer(Lecturer lec) {
 		this.name = lec.getName();
@@ -29,11 +33,12 @@ public abstract class Lecturer<T> {
 		this.degree_name = lec.getDegree_name();
 		this.salary = lec.getSalary();
 		this.dep_name = lec.getDep_name();
-		this.commi = (ArrayList<Committee>) lec.commi.clone();
+		this.commi = new ArrayList<>(lec.commi);
 	}
-	
+
+	// 1 = Bachelor/Master, 2 = Doctor, 3 = Professor (used for committee homogeneity - part 1)
 	public abstract int getLevel();
-	
+
 	// Getters and Setters
 	public String getName() {
 		return this.name;
@@ -64,7 +69,7 @@ public abstract class Lecturer<T> {
 	}
 
 	public void setSalary(int salary) throws InvalidSalaryException {
-		if(salary < 0) {
+		if (salary < 0) {
 			throw new InvalidSalaryException();
 		}
 		this.salary = salary;
@@ -77,51 +82,58 @@ public abstract class Lecturer<T> {
 	public void setDep_name(String dep_name) {
 		this.dep_name = dep_name;
 	}
-	
-	public void removeCommittee(String comName) throws CommitteeDoesntExistsException {
-	    for (int i = 0; i < this.commi.size(); i++) {
-	        if (this.commi.get(i).getName().equals(comName)) {
-	            this.commi.remove(i);
-	            return;
-	        }
-	    }
-	    throw new CommitteeDoesntExistsException();
+
+	public ArrayList<Committee<?>> getCommi() {
+		return this.commi;
 	}
-	
-	public void addCommittee(Committee c) throws CommitteeAlreadyExistsException {
-		
-		if(this.commi.contains(c)) {
-			throw new CommitteeAlreadyExistsException();
+
+	public void setCommi(ArrayList<Committee<?>> commi) {
+		this.commi = commi;
+	}
+
+	// removes the committee from the lecturer's list, returns true if it was found
+	public boolean removeCommittee(String comName) {
+		for (int i = 0; i < this.commi.size(); i++) {
+			if (this.commi.get(i).getName().equals(comName)) {
+				this.commi.remove(i);
+				return true;
+			}
 		}
-		this.commi.add(c);
+		return false;
 	}
-	
+
+	// links a committee to this lecturer (no duplicates)
+	public void addCommittee(Committee<?> c) {
+		if (!this.commi.contains(c)) {
+			this.commi.add(c);
+		}
+	}
+
 	public String toStringCommittee() {
-	    if (this.commi.size() == 0) {
-	        return "Committees: None";
-	    }
-	    
-	    String s = "Committees: ";
-	    for(int i = 0; i < this.commi.size(); i++) {
-	        s += this.commi.get(i).getName();
-	        if (i < this.commi.size() - 1) {
-	            s += ", ";
-	        }
-	    }
-	    return s;
+		if (this.commi.isEmpty()) {
+			return "Committees: None";
+		}
+		String s = "Committees: ";
+		for (int i = 0; i < this.commi.size(); i++) {
+			s += this.commi.get(i).getName();
+			if (i < this.commi.size() - 1) {
+				s += ", ";
+			}
+		}
+		return s;
 	}
-	
+
 	@Override
 	public boolean equals(Object o) {
-	    if (this == o) return true;
-	    if (o == null || getClass() != o.getClass()) return false;
-	    Lecturer other = (Lecturer) o;
-	    return this.name.equals(other.name) && this.id.equals(other.id);
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Lecturer other = (Lecturer) o;
+		return this.name.equals(other.name) && this.id.equals(other.id);
 	}
-	
+
 	// Lecturer toString func
 	public String toString() {
-		return "Lecturer --> name: " + this.name + ", id: " + this.id + ", degree: " + ", degree_name: " + this.degree_name
+		return "Lecturer --> name: " + this.name + ", id: " + this.id + ", degree_name: " + this.degree_name
 				+ ", salary: " + this.salary + ", dep_name: " + this.dep_name + ", " + toStringCommittee();
-	}	
+	}
 }
